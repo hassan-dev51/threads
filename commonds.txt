@@ -1,0 +1,22 @@
+threads algorithms
+
+//create next app
+
+1 npx create-next-app@latest
+
+//install clerk for authentication
+
+2 npm i @clerk/nextjs 
+
+//install the uploadthing for images
+
+3 npm i uploadthing @uploadthing/react
+
+//install the mongoose for mongodb schema
+
+4 npm i mongoose
+
+//install the svix for using webhooks
+ 
+5 npm i svix
+
