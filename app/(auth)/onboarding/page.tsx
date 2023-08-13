@@ -1,12 +1,6 @@
 import AccoutProfile from "@/components/form/AccountProfile";
+import { userInfoProps } from "@/lib/interface";
 import { currentUser } from "@clerk/nextjs";
-
-interface userInfoProps {
-  username: string;
-  name: string;
-  bio: string;
-  image: string;
-}
 
 const OnBoarding = async () => {
   const user = await currentUser();
