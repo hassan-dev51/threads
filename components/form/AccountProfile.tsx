@@ -17,29 +17,66 @@ import { Input } from "../ui/input";
 
 import { userSchema } from "@/lib/validation/user";
 import { AccoutProfileProps } from "@/lib/interface";
-import { ChangeEvent } from "react";
+import { ChangeEvent, useState } from "react";
 import Image from "next/image";
+import { z } from "zod";
+import { isBase64Image } from "@/lib/utils";
+import { useUploadThing } from "@/lib/uploadThing";
 
 const AccoutProfile = ({ userData, btnText }: AccoutProfileProps) => {
+  const [file, setFile] = useState<File[]>([]);
+  const { startUpload } = useUploadThing("media");
   const form = useForm({
     resolver: zodResolver(userSchema),
     defaultValues: {
-      profile_photo: "",
-      name: "",
-      username: "",
-      bio: "",
+      profile_photo: userData?.image || "",
+      name: userData?.name || "",
+      username: userData?.username || "",
+      bio: userData?.bio || "",
     },
   });
 
-  const onSubmit = (
+  //function to submit the form data
+  const onSubmit = async (values: z.infer<typeof userSchema>) => {
+    const blob = values.profile_photo;
+    const ifImageChanged = isBase64Image(blob);
+
+    if (ifImageChanged) {
+      const imageResponse = await startUpload(file);
+      if (imageResponse && imageResponse[0].url) {
+        values.profile_photo = imageResponse[0].url;
+      }
+    }
+  };
+
+  //function to change the image
+  const handleImage = (
     e: ChangeEvent<HTMLInputElement>,
     fieldChange: (value: string) => void
   ) => {
     e.preventDefault();
+
+    const fileReader = new FileReader();
+
+    //check the file length only select one
+    if (e.target.files && e.target.files.length > 0) {
+      //then select the selected image
+      const file = e.target.files[0];
+      setFile(Array.from(e.target.files));
+
+      //check if uploaded file is not image
+      if (!file.type.includes("image")) return;
+
+      fileReader.onload = async (event) => {
+        const imageDataUrl = event.target?.result?.toString() || "";
+        fieldChange(imageDataUrl);
+      };
+      fileReader.readAsDataURL(file);
+    }
   };
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 ">
         <FormField
           control={form.control}
           name="profile_photo"
@@ -53,7 +90,7 @@ const AccoutProfile = ({ userData, btnText }: AccoutProfileProps) => {
                     width={96}
                     height={96}
                     priority
-                    className="rounded-full object-contain"
+                    className="rounded-full object-fill h-[96px]"
                   />
                 ) : (
                   <Image
@@ -61,7 +98,7 @@ const AccoutProfile = ({ userData, btnText }: AccoutProfileProps) => {
                     alt="profile_icon"
                     width={24}
                     height={24}
-                    className="object-contain"
+                    className="object-contain "
                   />
                 )}
               </FormLabel>
@@ -71,7 +108,7 @@ const AccoutProfile = ({ userData, btnText }: AccoutProfileProps) => {
                   accept="image/*"
                   placeholder="Add profile photo"
                   className="account-form_image-input"
-                  //   onChange={(e) => handleImage(e, field.onChange)}
+                  onChange={(e) => handleImage(e, field.onChange)}
                 />
               </FormControl>
             </FormItem>
