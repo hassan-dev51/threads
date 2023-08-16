@@ -1,6 +1,12 @@
 "use client";
+
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
+
+import { ChangeEvent, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 import {
   Form,
@@ -10,22 +16,20 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import { Input } from "../ui/input";
 
 import { userSchema } from "@/lib/validation/user";
 import { AccoutProfileProps } from "@/lib/interface";
-import { ChangeEvent, useState } from "react";
-import Image from "next/image";
-import { z } from "zod";
 import { isBase64Image } from "@/lib/utils";
 import { useUploadThing } from "@/lib/uploadThing";
+import { updateUser } from "@/lib/actions/user.action";
 
 const AccoutProfile = ({ userData, btnText }: AccoutProfileProps) => {
   const [file, setFile] = useState<File[]>([]);
   const { startUpload } = useUploadThing("media");
+
   const form = useForm({
     resolver: zodResolver(userSchema),
     defaultValues: {
@@ -36,6 +40,8 @@ const AccoutProfile = ({ userData, btnText }: AccoutProfileProps) => {
     },
   });
 
+  const pathname = usePathname();
+  const router = useRouter();
   //function to submit the form data
   const onSubmit = async (values: z.infer<typeof userSchema>) => {
     const blob = values.profile_photo;
@@ -47,6 +53,17 @@ const AccoutProfile = ({ userData, btnText }: AccoutProfileProps) => {
         values.profile_photo = imageResponse[0].url;
       }
     }
+
+    await updateUser({
+      name: values.name,
+      username: values.username,
+      bio: values.bio,
+      image: values.profile_photo,
+      userId: userData?.id,
+      path: pathname,
+    });
+
+    alert("Changes Saved");
   };
 
   //function to change the image
