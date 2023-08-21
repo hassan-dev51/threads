@@ -29,7 +29,6 @@ const threadSchema = new mongoose.Schema({
   ],
 });
 
-const Threads =
-  mongoose.models.Threads || mongoose.model("Thread", threadSchema);
+const Thread = mongoose.models.Thread || mongoose.model("Thread", threadSchema);
 
-export default Threads;
+export default Thread;
