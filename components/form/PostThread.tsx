@@ -28,7 +28,7 @@ const PostThread = ({ userId }: Props) => {
   const postThread = async (values: z.infer<typeof threadValidation>) => {
     await createthread({
       text: values.thread,
-      author: userId,
+      author: userId, // this is the id which assigned to user when he login first-time
       communityId: null,
       path: path,
     });
